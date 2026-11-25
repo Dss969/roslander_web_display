@@ -1,0 +1,11 @@
+{
+  "map": "map_01.yaml",
+  "frame_id": "map",
+  "notice": "仿真预设点 · 点击直接导航，可用顶部按钮停止当前网页任务",
+  "places": [
+    {"id": "detect", "name": "detect", "description": "检测点 · (1.50, -0.30) · 90°", "icon": "scan", "x": 1.50, "y": -0.30, "yaw_degrees": 90.0},
+    {"id": "pick1", "name": "pick1", "description": "取料 1 · (0.95, -3.10) · 0°", "icon": "place", "x": 0.95, "y": -3.10, "yaw_degrees": 0.0},
+    {"id": "place", "name": "place", "description": "放置点 · (1.28, -0.33) · 35°", "icon": "place", "x": 1.28, "y": -0.33, "yaw_degrees": 35.0},
+    {"id": "pick2", "name": "pick2", "description": "取料 2 · (0.95, -3.10) · -180°", "icon": "place", "x": 0.95, "y": -3.10, "yaw_degrees": -180.0}
+  ]
+}

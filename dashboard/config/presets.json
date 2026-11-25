@@ -1,0 +1,39 @@
+{
+  "navigation_enabled": true,
+  "notice": "三处目标均来自 2026-10-21 实车 RViz 的 map 坐标记录；保留二次确认，现场安全验收后再标记为已验证。",
+  "places": [
+    {
+      "id": "start_test",
+      "name": "起始点",
+      "description": "RViz 实录 · (0.776, -0.654) · 朝向 15.4°",
+      "icon": "home",
+      "x": 0.7764631509780884,
+      "y": -0.654042661190033,
+      "yaw": 0.26947428977249366,
+      "verified": false,
+      "enabled": true
+    },
+    {
+      "id": "detect_test",
+      "name": "检测点",
+      "description": "左侧区域 · RViz 实录 (0.370, -0.350) · 朝向 -172.9°",
+      "icon": "scan",
+      "x": 0.36990678310394287,
+      "y": -0.35030123591423035,
+      "yaw": -3.017859696986819,
+      "verified": false,
+      "enabled": true
+    },
+    {
+      "id": "place_test",
+      "name": "放置点",
+      "description": "右侧区域 · RViz 实录 (0.671, -8.201) · 朝向 -5.3°",
+      "icon": "place",
+      "x": 0.6708472967147827,
+      "y": -8.20132827758789,
+      "yaw": -0.09183598048025396,
+      "verified": false,
+      "enabled": true
+    }
+  ]
+}

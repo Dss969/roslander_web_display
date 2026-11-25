@@ -1,0 +1,50 @@
+<!-- Adapted from Nav2 Humble (Apache-2.0).
+     Replan, clear costmaps, spin and wait. No reverse recovery with a forward-only lidar. -->
+
+<!--
+  Replan through poses at 0.333 Hz, retaining a valid remaining path near the
+  final goal. Changed goals and invalid paths still trigger planning/recovery.
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="0.333">
+          <RecoveryNode number_of_retries="1" name="ComputePathThroughPoses">
+            <Fallback name="PlanOrKeepNearFinalGoalPath">
+              <ReactiveSequence name="KeepValidPathNearFinalGoal">
+                <Inverter><GlobalUpdatedGoal/></Inverter>
+                <IsGoalNearby path="{path}" proximity_threshold="0.30"
+                              max_robot_pose_search_dist="1.5"
+                              global_frame="map" robot_base_frame="base_footprint"
+                              remaining_path="{remaining_path}"/>
+                <IsPathValid path="{remaining_path}"/>
+              </ReactiveSequence>
+              <ReactiveSequence>
+                <RemovePassedGoals input_goals="{goals}" output_goals="{goals}" radius="0.12"/>
+                <ComputePathThroughPoses goals="{goals}" path="{path}" planner_id="GridBased"/>
+              </ReactiveSequence>
+            </Fallback>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
+        <UseLatestPathTF input_path="{path}" output_path="{controller_path}" global_frame="map"/>
+        <RecoveryNode number_of_retries="1" name="FollowPath">
+          <FollowPath path="{controller_path}" controller_id="FollowPath"/>
+          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>
+      </PipelineSequence>
+      <ReactiveFallback name="RecoveryFallback">
+        <GoalUpdated/>
+        <RoundRobin name="RecoveryActions">
+          <Sequence name="ClearingActions">
+            <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </Sequence>
+          <Spin spin_dist="1.57"/>
+          <Wait wait_duration="5"/>
+        </RoundRobin>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="roslander_arena">
+    <!--
+      Gazebo physical-world coordinate convention:
+        X: map image horizontal direction (field width, 2.160 m)
+        Y: map image vertical direction (field length, 3.920 m)
+        Z: upward
+
+      Keep this physical world unchanged. The navigation occupancy-grid origin
+      applies (+0.34, -0.27) m so the lower-left inner corner shown in the
+      Gazebo view is map (0, 0). Red remains +X and green remains +Y.
+
+      Exact clear area in the Gazebo world frame:
+        X: [-0.34, 1.82]
+        Y: [-3.65, 0.27]
+
+      Wall thickness: 0.020 m
+      Wall height:    0.800 m
+    -->
+
+    <gravity>0 0 -9.8</gravity>
+
+    <physics name="default_physics" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <scene>
+      <ambient>0.45 0.45 0.45 1</ambient>
+      <background>0.75 0.80 0.85 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.4 0.3 -1.0</direction>
+    </light>
+
+    <model name="roslander_arena">
+      <static>true</static>
+      <link name="arena">
+        <!-- Floor: exactly 2.160 m x 3.920 m. -->
+        <collision name="floor_collision">
+          <pose>0.74 -1.69 -0.01 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.16 3.92 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1.0</mu>
+                <mu2>1.0</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="floor_visual">
+          <pose>0.74 -1.69 -0.01 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.16 3.92 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.78 0.78 0.78 1</ambient>
+            <diffuse>0.78 0.78 0.78 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Walls are placed outside the measured clear area. -->
+        <collision name="west_wall_collision">
+          <pose>-0.35 -1.69 0.40 0 0 0</pose>
+          <geometry><box><size>0.02 3.92 0.80</size></box></geometry>
+        </collision>
+        <visual name="west_wall_visual">
+          <pose>-0.35 -1.69 0.40 0 0 0</pose>
+          <geometry><box><size>0.02 3.92 0.80</size></box></geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1</ambient>
+            <diffuse>0.92 0.92 0.92 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="east_wall_collision">
+          <pose>1.83 -1.69 0.40 0 0 0</pose>
+          <geometry><box><size>0.02 3.92 0.80</size></box></geometry>
+        </collision>
+        <visual name="east_wall_visual">
+          <pose>1.83 -1.69 0.40 0 0 0</pose>
+          <geometry><box><size>0.02 3.92 0.80</size></box></geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1</ambient>
+            <diffuse>0.92 0.92 0.92 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="north_wall_collision">
+          <pose>0.74 0.28 0.40 0 0 0</pose>
+          <geometry><box><size>2.20 0.02 0.80</size></box></geometry>
+        </collision>
+        <visual name="north_wall_visual">
+          <pose>0.74 0.28 0.40 0 0 0</pose>
+          <geometry><box><size>2.20 0.02 0.80</size></box></geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1</ambient>
+            <diffuse>0.92 0.92 0.92 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="south_wall_collision">
+          <pose>0.74 -3.66 0.40 0 0 0</pose>
+          <geometry><box><size>2.20 0.02 0.80</size></box></geometry>
+        </collision>
+        <visual name="south_wall_visual">
+          <pose>0.74 -3.66 0.40 0 0 0</pose>
+          <geometry><box><size>2.20 0.02 0.80</size></box></geometry>
+          <material>
+            <ambient>0.92 0.92 0.92 1</ambient>
+            <diffuse>0.92 0.92 0.92 1</diffuse>
+          </material>
+        </visual>
+
+        <!--
+          Five 360 mm sponge blocks. Positions are approximate centers read
+          from map_01.pgm. The lower left/right blocks touch the side walls.
+        -->
+        <collision name="upper_left_block_collision">
+          <pose>0.29 -1.14 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+        </collision>
+        <visual name="upper_left_block_visual">
+          <pose>0.29 -1.14 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+          <material>
+            <ambient>0.85 0.45 0.12 1</ambient>
+            <diffuse>0.85 0.45 0.12 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="upper_right_block_collision">
+          <pose>1.16 -1.15 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+        </collision>
+        <visual name="upper_right_block_visual">
+          <pose>1.16 -1.15 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+          <material>
+            <ambient>0.85 0.45 0.12 1</ambient>
+            <diffuse>0.85 0.45 0.12 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="lower_left_block_collision">
+          <pose>-0.16 -2.36 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+        </collision>
+        <visual name="lower_left_block_visual">
+          <pose>-0.16 -2.36 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+          <material>
+            <ambient>0.85 0.45 0.12 1</ambient>
+            <diffuse>0.85 0.45 0.12 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="lower_center_block_collision">
+          <pose>0.74 -2.35 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+        </collision>
+        <visual name="lower_center_block_visual">
+          <pose>0.74 -2.35 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+          <material>
+            <ambient>0.85 0.45 0.12 1</ambient>
+            <diffuse>0.85 0.45 0.12 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="lower_right_block_collision">
+          <pose>1.64 -2.36 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+        </collision>
+        <visual name="lower_right_block_visual">
+          <pose>1.64 -2.36 0.18 0 0 0</pose>
+          <geometry><box><size>0.36 0.36 0.36</size></box></geometry>
+          <material>
+            <ambient>0.85 0.45 0.12 1</ambient>
+            <diffuse>0.85 0.45 0.12 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

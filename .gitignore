@@ -1,0 +1,32 @@
+/build/
+/install/
+/log/
+/.deps/
+/.runtime/
+/.venv/
+/config/*.local.json
+__pycache__/
+*.py[cod]
+.DS_Store
+.idea/
+.vscode/
+
+# Test sources are shared; generated test/cache outputs are not.
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.gcda
+*.gcno
+*.egg-info/
+/dist/
+
+# Editor temporary files.
+*~
+*.swp
+*.swo

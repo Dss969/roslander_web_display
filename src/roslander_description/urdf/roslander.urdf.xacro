@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="roslander" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="controllers_file" default="$(find roslander_description)/config/controllers.yaml"/>
+  <xacro:arg name="odom_topic" default="/odom"/>
+  <xacro:property name="lidar"        value="$(env LIDAR_TYPE)"/>
+  <xacro:include filename="$(find roslander_description)/urdf/inertial_matrix.xacro" />
+  <xacro:include filename="$(find roslander_description)/urdf/materials.xacro"/>
+  <!-- Gazebo sensor properties live in their own package. This include adds
+       sensors only; it does not add wheel friction, drive or navigation. -->
+  <xacro:include filename="$(find roslander_sensors)/urdf/roslander_sensors.gazebo.xacro"/>
+  <xacro:property name="base_link_mass"     value="1.6" /> 
+  <xacro:property name="base_link_w"        value="0.302"/>
+  <xacro:property name="base_link_h"        value="0.145"/>
+  <xacro:property name="base_link_d"        value="0.05"/>
+
+  <xacro:property name="body_link_mass"     value="1.6" /> 
+  <xacro:property name="body_link_w"        value="0.288"/>
+  <xacro:property name="body_link_h"        value="0.145"/>
+  <xacro:property name="body_link_d"        value="0.092"/>
+
+  <xacro:property name="screen_link_mass"   value="0.5" /> 
+  <xacro:property name="screen_link_w"      value="0.067"/>
+  <xacro:property name="screen_link_h"      value="0.17"/>
+  <xacro:property name="screen_link_d"      value="0.31"/>
+
+  <xacro:property name="wheel_link_mass"    value="0.1" />
+  <xacro:property name="wheel_link_radius"  value="0.049"/>
+  <xacro:property name="wheel_link_length"  value="0.04167"/>
+  <xacro:property name="wheel_effort_limit" value="0.4"/>
+  <xacro:property name="wheel_speed_limit"  value="15.0"/>
+
+  <!--
+    The visual meshes look like mecanum wheels, but navigation only uses x/yaw.
+    Model them as four driven wheels with strong Coulomb grip and force-based
+    lateral compliance. This avoids the static-friction deadlock of four
+    cylindrical contact patches while retaining longitudinal traction.
+  -->
+  <xacro:macro name="wheel_contact" params="link_name">
+    <gazebo reference="${link_name}">
+      <!-- The collision cylinder's local Z axis is the wheel axle. -->
+      <mu1>1.0</mu1>
+      <mu2>1.0</mu2>
+      <fdir1>0 0 1</fdir1>
+    </gazebo>
+  </xacro:macro>
+
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0.04" rpy="0 0 0"/>
+  </joint>
+
+  <link
+    name="base_link">
+    <!-- The battery/electronics equivalent mass is biased forward so the
+         complete base (including the rear screen) has its CoM at x ~= 0. -->
+    <inertial>
+      <origin xyz="0.0407 0 0" rpy="0 0 0" />
+      <mass value="${base_link_mass}" />
+      <inertia
+        ixx="${base_link_mass*(base_link_h*base_link_h+base_link_d*base_link_d)/12}"
+        ixy="0" ixz="0"
+        iyy="${base_link_mass*(base_link_w*base_link_w+base_link_d*base_link_d)/12}"
+        iyz="0"
+        izz="${base_link_mass*(base_link_w*base_link_w+base_link_h*base_link_h)/12}" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.3 0.3 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.0015 0 ${base_link_d/2}"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="${base_link_w} ${base_link_h} ${base_link_d}" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="body_link">
+    <xacro:box_inertial m="${body_link_mass}" w="${body_link_w}" h="${body_link_h}" d="${body_link_d}"/>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/body_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.3 0.3 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.005 0 ${body_link_d/2}"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="${body_link_w} ${body_link_h} ${body_link_d}" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="body_joint"
+    type="fixed">
+    <origin
+      xyz="0 0 0.0496414362882255"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="body_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="lidar_link">
+    <inertial>
+      <origin
+        xyz="0.000511582656730666 0.00023264437801222 -0.0101267638965091"
+        rpy="0 0 0" />
+      <mass
+        value="0.165607195061176" />
+      <inertia
+        ixx="5.8847632803702E-05"
+        ixy="4.64192506225023E-07"
+        ixz="1.56622834751372E-07"
+        iyy="5.97028055863307E-05"
+        iyz="8.02856196156377E-08"
+        izz="0.000108240525493285" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/lidar_link.STL" />
+      </geometry>
+      <material name="black"/>
+    </visual>
+<!--    <collision>-->
+<!--      <origin-->
+<!--        xyz="0 0 0"-->
+<!--        rpy="0 0 0" />-->
+<!--      <geometry>-->
+<!--        <mesh-->
+<!--          filename="package://roslander_description/meshes/lidar_link.STL" />-->
+<!--      </geometry>-->
+<!--    </collision>-->
+  </link>
+  <joint
+    name="lidar_joint"
+    type="fixed">
+    <origin
+      xyz="0.0890864985819267 0 0.0650119118660841"
+      rpy="0 0 3.14159265358979" />
+    <parent
+      link="body_link" />
+    <child
+      link="lidar_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="screen_link">
+    <xacro:box_inertial m="${screen_link_mass}" w="${screen_link_w}" h="${screen_link_h}" d="${screen_link_d}"/>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/screen_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.3 0.3 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0.012 0 0.01"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="${screen_link_w} ${screen_link_h} ${screen_link_d}" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="screen_joint"
+    type="fixed">
+    <origin
+      xyz="-0.15964232558058 0 0.236023036021671"
+      rpy="0 0 0" />
+    <parent
+      link="body_link" />
+    <child
+      link="screen_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="astra_camera_link">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/depth_cam_link.STL" />
+      </geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+  <joint
+    name="astra_camera_joint"
+    type="fixed">
+    <origin
+      xyz="0.0255053534641942 0 0.151269407648836"
+      rpy="0 0 0" />
+    <parent
+      link="screen_link" />
+    <child
+      link="astra_camera_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="wheel_front_right_link">
+    <xacro:cylinder_inertial m="${wheel_link_mass}" r="${wheel_link_radius}" h="${wheel_link_length}" />
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/wheel_front_right_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.3 0.3 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0.003 0"
+        rpy="${M_PI/2} 0 0" />
+      <geometry>
+        <cylinder length="${wheel_link_length}" radius="${wheel_link_radius}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_front_right_joint"
+    type="continuous">
+    <origin
+      xyz="0.096499 -0.1121 0.010864"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="wheel_front_right_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit effort="${wheel_effort_limit}" velocity="${wheel_speed_limit}" />
+    <dynamics damping="0.02" friction="0.0" />
+  </joint>
+  <link
+    name="wheel_front_left_link">
+    <xacro:cylinder_inertial m="${wheel_link_mass}" r="${wheel_link_radius}" h="${wheel_link_length}" />
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/wheel_front_left_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.3 0.3 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 -0.003 0"
+        rpy="${M_PI/2} 0 0" />
+      <geometry>
+        <cylinder length="${wheel_link_length}" radius="${wheel_link_radius}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_front_left_joint"
+    type="continuous">
+    <origin
+      xyz="0.096499 0.11216 0.010864"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="wheel_front_left_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit effort="${wheel_effort_limit}" velocity="${wheel_speed_limit}" />
+    <dynamics damping="0.02" friction="0.0" />
+  </joint>
+  <link
+    name="wheel_rear_left_link">
+    <xacro:cylinder_inertial m="${wheel_link_mass}" r="${wheel_link_radius}" h="${wheel_link_length}" />
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/wheel_rear_left_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.3 0.3 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 -0.003 0"
+        rpy="${M_PI/2} 0 0" />
+      <geometry>
+        <cylinder length="${wheel_link_length}" radius="${wheel_link_radius}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_rear_left_joint"
+    type="continuous">
+    <origin
+      xyz="-0.098528 0.11216 0.010864"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="wheel_rear_left_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit effort="${wheel_effort_limit}" velocity="${wheel_speed_limit}" />
+    <dynamics damping="0.02" friction="0.0" />
+  </joint>
+  <link
+    name="wheel_rear_right_link">
+    <xacro:cylinder_inertial m="${wheel_link_mass}" r="${wheel_link_radius}" h="${wheel_link_length}" />
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://roslander_description/meshes/wheel_rear_right_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.3 0.3 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0.003 0"
+        rpy="${M_PI/2} 0 0" />
+      <geometry>
+        <cylinder length="${wheel_link_length}" radius="${wheel_link_radius}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_rear_right_joint"
+    type="continuous">
+    <origin
+      xyz="-0.098528 -0.1121 0.010864"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="wheel_rear_right_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit effort="${wheel_effort_limit}" velocity="${wheel_speed_limit}" />
+    <dynamics damping="0.02" friction="0.0" />
+  </joint>
+
+  <xacro:wheel_contact link_name="wheel_front_left_link" />
+  <xacro:wheel_contact link_name="wheel_front_right_link" />
+  <xacro:wheel_contact link_name="wheel_rear_left_link" />
+  <xacro:wheel_contact link_name="wheel_rear_right_link" />
+  <link name="depth_cam_frame" />
+  <joint
+    name="depth_cam_joint_sim"
+    type="fixed">
+    <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
+    <parent link="astra_camera_link" />
+    <child link="depth_cam_frame" />
+  </joint>
+  <link name="imu_link"/>
+  <joint
+    name="imu_joint"
+    type="fixed">
+    <origin
+      xyz="0.0048416 0.011168 0.07"
+      rpy="${M_PI} 0 -${M_PI/2}" />
+    <parent
+      link="base_link" />
+    <child
+      link="imu_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link name="lidar_sim_frame" />
+  <joint
+    name="lidar_sim_frame_joint"
+    type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 ${M_PI}" />
+    <parent link="lidar_link" />
+    <child link="lidar_sim_frame" />
+  </joint>
+  <xacro:if value="${lidar == 'S2L'}">
+    <xacro:include filename="$(find roslander_description)/urdf/lidar_s2l.urdf.xacro"/>
+  </xacro:if>
+  <xacro:if value="${lidar == 'G4'}">
+    <xacro:include filename="$(find roslander_description)/urdf/lidar_g4.urdf.xacro"/>
+  </xacro:if>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="wheel_front_left_joint">
+      <command_interface name="velocity">
+        <param name="min">-${wheel_speed_limit}</param>
+        <param name="max">${wheel_speed_limit}</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="wheel_front_right_joint">
+      <command_interface name="velocity">
+        <param name="min">-${wheel_speed_limit}</param>
+        <param name="max">${wheel_speed_limit}</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="wheel_rear_left_joint">
+      <command_interface name="velocity">
+        <param name="min">-${wheel_speed_limit}</param>
+        <param name="max">${wheel_speed_limit}</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="wheel_rear_right_joint">
+      <command_interface name="velocity">
+        <param name="min">-${wheel_speed_limit}</param>
+        <param name="max">${wheel_speed_limit}</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+
+  <gazebo>
+    <!--
+      URDF's Gazebo extension does not translate slip1/slip2 into the collision
+      surface. This plugin sets the ODE surface fields directly after loading.
+      ODE slip units are (m/s)/N; fdir1 above is the lateral wheel direction.
+    -->
+    <plugin name="roslander_wheel_contact" filename="libroslander_wheel_contact.so">
+      <lateral_slip>0.1</lateral_slip>
+      <longitudinal_slip>0.0</longitudinal_slip>
+      <cmd_vel_timeout>0.5</cmd_vel_timeout>
+      <angular_threshold>0.01</angular_threshold>
+      <wheel_link>wheel_front_left_link</wheel_link>
+      <wheel_link>wheel_front_right_link</wheel_link>
+      <wheel_link>wheel_rear_left_link</wheel_link>
+      <wheel_link>wheel_rear_right_link</wheel_link>
+      <ros>
+        <remapping>~/cmd_vel:=/cmd_vel</remapping>
+      </ros>
+    </plugin>
+
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <robot_param>robot_description</robot_param>
+      <robot_param_node>robot_state_publisher</robot_param_node>
+      <parameters>$(arg controllers_file)</parameters>
+      <ros>
+        <remapping>/diff_drive_controller/cmd_vel_unstamped:=/cmd_vel</remapping>
+        <remapping>/diff_drive_controller/odom:=$(arg odom_topic)</remapping>
+        <remapping>/diff_drive_controller/cmd_vel_out:=/cmd_vel_out</remapping>
+      </ros>
+    </plugin>
+  </gazebo>
+
+</robot>

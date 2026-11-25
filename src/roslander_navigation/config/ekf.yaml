@@ -1,0 +1,37 @@
+ekf_filter_node:
+  ros__parameters:
+    use_sim_time: true
+    frequency: 50.0
+    sensor_timeout: 0.2
+    two_d_mode: true
+    publish_tf: true
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: odom
+    transform_time_offset: 0.0
+    transform_timeout: 0.05
+    print_diagnostics: true
+
+    # Integrate wheel forward velocity; vy=0 is the nonholonomic constraint.
+    # Do not feed encoder yaw or encoder-integrated x/y back into the filter.
+    odom0: /wheel/odom
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true, true, false,
+                   false, false, false,
+                   false, false, false]
+    odom0_queue_size: 10
+    odom0_differential: false
+
+    # Use the gyro only, without Gazebo world orientation/position feedback.
+    # robot_localization transforms imu_link (mounted upside down) into base.
+    imu0: /imu
+    imu0_config: [false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, true,
+                  false, false, false]
+    imu0_queue_size: 20
+    imu0_differential: false
+    imu0_remove_gravitational_acceleration: false

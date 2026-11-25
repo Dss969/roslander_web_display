@@ -1,0 +1,10 @@
+image: map_01.pgm
+resolution: 0.025000
+# The lower-left inner wall corner shown in the Gazebo view is map (0, 0).
+# Compared with the original scanned-map coordinates, this applies
+# (+0.34, -0.27) m. +X follows the red arrow, +Y follows the green arrow,
+# and the arena extends in the negative-Y direction.
+origin: [-4.660000, -5.270000, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196

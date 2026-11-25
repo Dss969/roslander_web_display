@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4f2ec">
+  <title>ROSLander · 小车状态台</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231f2726'/%3E%3Ccircle cx='11' cy='16' r='2.5' fill='%2375c2b1'/%3E%3Ccircle cx='21' cy='16' r='2.5' fill='%23f2c879'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css?v=preset-nav-20261111">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4.8 13.2h6.4L10.4 22 19 10.6h-6.2L13 2Z"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M4 10a12 12 0 0 1 16 0M7 14a7.5 7.5 0 0 1 10 0M10.3 17.5a2.7 2.7 0 0 1 3.4 0M12 21h.01"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 7h3l1.5-2h7L17 7h3v12H4V7Z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 12h8M12 8v8"/></symbol>
+    <symbol id="i-speed" viewBox="0 0 24 24"><path d="M4.2 18a8.5 8.5 0 1 1 15.6 0M12 14l4-4"/><circle cx="12" cy="14" r="1"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5M12 17.5h.01"/></symbol>
+    <symbol id="i-location" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3V9a3 3 0 0 1 3-3"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4v11l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v11M7.5 5l9 4"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand-area"><div class="brand">
+      <span class="brand-mark"><span></span><span></span></span>
+      <div><strong>ROSLander</strong><small>实时状态台</small></div>
+    </div>
+    <nav class="view-tabs" aria-label="主视图切换">
+      <button id="monitorTab" type="button" aria-pressed="true" aria-controls="monitorView">实时监控</button>
+      <button id="gazeboTab" type="button" aria-pressed="false" aria-controls="gazeboView">Gazebo</button>
+    </nav></div>
+    <div class="header-status">
+      <button class="nav-stop-button" id="navStopButton" type="button" aria-label="停止网页导航任务" disabled><svg><use href="#i-stop"></use></svg><span>停止导航</span></button>
+      <span class="readonly-badge" id="modeBadge">本机仿真</span>
+      <span class="connection-pill" id="connectionPill"><i></i><span>正在连接</span></span>
+      <time id="clock">--:--</time>
+      <form action="/logout" method="post"><button class="logout-button" type="submit">退出</button></form>
+    </div>
+  </header>
+
+  <section class="health-banner waiting" id="healthBanner" role="status" aria-live="polite">
+    <span class="health-indicator"><svg><use href="#i-shield"></use></svg></span>
+    <div><strong id="healthTitle">正在连接本机仿真</strong><p id="healthMessage">地图、视野与设备状态将自动更新</p></div>
+    <span class="health-detail" id="healthDetail">等待数据</span>
+  </section>
+
+  <main class="dashboard-shell">
+    <aside class="left-rail">
+      <section class="robot-summary panel-soft">
+        <div class="eyebrow">当前设备</div>
+        <div class="robot-heading">
+          <div class="robot-avatar" aria-hidden="true"><span class="robot-eye"></span><span class="robot-eye"></span></div>
+          <div><h1 id="robotName">ROSLander 01</h1><p id="robotStatus">等待连接</p></div>
+        </div>
+        <div class="primary-metric">
+          <svg><use href="#i-speed"></use></svg>
+          <div><span id="speedValue">—</span><small id="velocityDescription" title="本机仿真轮速与 IMU 融合">m/s · 仿真里程计</small></div>
+        </div>
+        <div class="metric-row">
+          <div><span class="metric-icon"><svg><use href="#i-location"></use></svg></span><p>定位状态</p><strong id="poseConfidence">—</strong></div>
+          <div class="battery-metric"><span class="metric-icon"><svg><use href="#i-bolt"></use></svg></span><p>剩余电量</p><strong id="batteryValue">不适用</strong><small id="batteryDetail">纯仿真无实车电池</small></div>
+        </div>
+      </section>
+
+      <section class="sensor-section">
+        <div class="section-title"><span>设备状态</span><small id="sensorSummary">0 / 4 正常</small></div>
+        <div class="sensor-list" id="sensorList"></div>
+      </section>
+
+      <section class="network-card panel-soft">
+        <div class="network-icon"><svg><use href="#i-wifi"></use></svg></div>
+        <div><span id="networkTitle">本机仿真数据</span><strong id="networkLabel">等待连接</strong><small id="networkAddress">ROS_DOMAIN_ID=03 · 本机回环</small></div>
+        <b id="latencyValue">—</b>
+      </section>
+    </aside>
+
+    <section class="center-view"><section class="map-panel" id="monitorView">
+      <div class="map-toolbar">
+        <div><span class="eyebrow">实时地图</span><h2 id="mapTitle">小车位置总览</h2></div>
+        <div class="map-meta"><span id="mapSource"><i></i>缓存地图</span><span id="mapScale">比例 1:—</span></div>
+      </div>
+      <div class="map-stage" id="mapStage">
+        <canvas id="mapCanvas" aria-label="小车实时地图"></canvas>
+        <div class="map-empty" id="mapEmpty"><span class="locator-pulse"></span><strong>等待定位</strong><small>定位恢复后自动显示实时位置</small></div>
+        <button class="compass" id="resetRotation" type="button" aria-label="地图朝向复位" title="点击恢复地图朝向"><b>Y+</b><span></span></button>
+        <div class="map-gesture-hint">左键拖动平移 · 中键拖动旋转 · 滚轮缩放</div>
+        <div class="map-legend"><span><i class="legend-free"></i>可通行</span><span><i class="legend-wall"></i>障碍物</span><span><i class="legend-unknown"></i>未知</span></div>
+        <div class="map-controls">
+          <button id="zoomIn" aria-label="放大地图">＋</button>
+          <button id="zoomOut" aria-label="缩小地图">−</button>
+          <button id="resetView" aria-label="复位地图">⌖</button>
+          <button id="followRobot" aria-label="跟随小车" aria-pressed="false"><svg><use href="#i-location"></use></svg></button>
+          <button id="rotateLeft" aria-label="地图逆时针旋转15度" title="逆时针旋转">↶</button>
+          <button id="rotateRight" aria-label="地图顺时针旋转15度" title="顺时针旋转">↷</button>
+          <output id="rotationValue" aria-label="地图旋转角度">0°</output>
+        </div>
+      </div>
+      <div class="map-footer">
+        <div><span>坐标</span><strong id="coordinates">X — &nbsp; Y —</strong></div>
+        <div><span>朝向</span><strong id="heading">—</strong></div>
+        <div><span>角速度</span><strong id="angularSpeed">0.00 rad/s</strong></div>
+        <div class="update-chip"><i></i><span id="lastUpdate">等待实时数据</span></div>
+      </div>
+    </section>
+
+    <section class="gazebo-panel" id="gazeboView" hidden aria-label="Gazebo 图形界面">
+      <div class="gazebo-toolbar"><div><span class="eyebrow">Gazebo Classic</span><h2>仿真场景</h2></div>
+        <div class="gazebo-actions"><span id="gazeboStatus" role="status">等待连接</span><button id="gazeboReconnect" type="button">重新连接</button><button id="gazeboFullscreen" type="button">全屏 Gazebo</button></div>
+      </div>
+      <div id="gazeboScreen" aria-label="Gazebo 远程桌面"></div>
+      <div class="gazebo-footer">完整交互 · 点击画面后可使用键鼠操作 Gazebo<span>与本机共享仿真 · 侧栏持续更新</span></div>
+    </section></section>
+
+    <aside class="right-rail">
+      <section class="camera-panel">
+        <div class="section-title"><span>前方视野</span><small><i id="cameraDot"></i><b id="cameraState">离线</b><button class="camera-expand" id="cameraExpand" type="button" aria-label="放大相机画面"><svg><use href="#i-expand"></use></svg></button></small></div>
+        <div class="camera-frame" id="cameraFrame">
+          <img id="cameraFeed" alt="仿真 RGB 相机画面">
+          <div class="camera-placeholder" id="cameraPlaceholder">
+            <svg><use href="#i-camera"></use></svg><strong>等待仿真相机</strong><small>未提供时会明确显示，不连接实车相机</small>
+          </div>
+          <div class="camera-label" id="cameraLabel">仿真 RGB · 等待画面</div>
+        </div>
+      </section>
+
+      <section class="destinations-panel">
+        <div class="section-title"><span>预设地点</span><small id="navAvailability"><i></i><b>等待导航</b></small></div>
+        <div class="navigation-task" id="navigationTask">
+          <span class="navigation-task-icon"><svg><use href="#i-route"></use></svg></span>
+          <div><strong id="navStatusLabel">等待导航服务</strong><small id="navStatusMessage">观察本机 Nav2 任务状态</small></div>
+          <b id="navDistance">—</b>
+        </div>
+        <ol class="task-steps" id="taskSteps" aria-label="导航任务进度"><li>接收目标</li><li>正在前往</li><li>到达地点</li></ol>
+        <div class="task-details"><span id="navEta">预计到达 —</span><span id="navRecovery">等待任务</span></div>
+        <div class="preset-notice"><svg><use href="#i-shield"></use></svg><span id="presetNotice">正在读取仿真预设点</span></div>
+        <div class="destinations-list" id="destinationsList"></div>
+      </section>
+
+      <section class="alerts-panel">
+        <div class="section-title"><span>运行提示</span><small id="alertCount">0 条</small></div>
+        <div id="alertsList" class="alerts-list"></div>
+      </section>
+
+      <section class="safety-note">
+        <svg><use href="#i-scan"></use></svg>
+        <div><strong>仿真导航</strong><p>点击预设点自主导航；顶部“停止导航”取消当前网页任务。Gazebo 保留完整交互。</p></div>
+      </section>
+    </aside>
+  </main>
+  <dialog class="nav-confirm" id="navConfirmDialog">
+    <form method="dialog">
+      <span class="confirm-icon"><svg><use href="#i-alert"></use></svg></span>
+      <h2>确认发送待验收目标？</h2>
+      <p id="navConfirmText">该坐标尚未完成现场安全标定。</p>
+      <div class="confirm-warning">发送后小车可能立即开始运动。请确保现场有人看护、路线无障碍，并随时准备使用实体急停。</div>
+      <div class="confirm-actions">
+        <button value="cancel" class="button-secondary">返回</button>
+        <button value="confirm" class="button-primary" id="confirmNavigateButton">确认并开始导航</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status">连接已恢复</div>
+  <script src="/app.js?v=preset-nav-20261111" defer></script>
+  <script type="module" src="/gazebo.js?v=preset-nav-20261111"></script>
+</body>
+</html>

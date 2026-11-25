@@ -1,0 +1,8 @@
+{
+  "series_cells": 3,
+  "chemistry": "li-ion",
+  "nominal_voltage": 11.1,
+  "capacity_mah": 6000,
+  "confirmed": true,
+  "note": "2026-10-15 用户确认铭牌：11.1V 锂电池、6000mAh（3S）。电压曲线估算仅作参考，不代表 BMS 实测电量；容量不用于估算续航。"
+}

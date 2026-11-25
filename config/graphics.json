@@ -1,0 +1,6 @@
+{
+  "render_device": "egl0",
+  "require_hardware": true,
+  "geometry": "1280x720",
+  "fps": 30
+}

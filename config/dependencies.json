@@ -1,0 +1,65 @@
+[
+  {
+    "file": "turbovnc_3.3.1_amd64.deb",
+    "url": "https://github.com/TurboVNC/turbovnc/releases/download/3.3.1/turbovnc_3.3.1_amd64.deb",
+    "sha256": "5d99050312360a07c28aca484b944816aa32e9fe07912e3ed50e6bfda45f80ad",
+    "kind": "deb"
+  },
+  {
+    "file": "virtualgl_3.1.4_amd64.deb",
+    "url": "https://github.com/VirtualGL/virtualgl/releases/download/3.1.4/virtualgl_3.1.4_amd64.deb",
+    "sha256": "02edc6b599571c385389af1a006f07a70c298e1d97c580a9bfd4b39d835c51e6",
+    "kind": "deb"
+  },
+  {
+    "file": "novnc-1.7.0.tar.gz",
+    "url": "https://github.com/novnc/noVNC/archive/refs/tags/v1.7.0.tar.gz",
+    "sha256": "b1003a11b6e6e8d8f7f5e5586daae7f8ca651d8aee0aa155ff9ac841c48f52c6",
+    "kind": "tar"
+  },
+  {
+    "file": "fluxbox_1.3.5-2.1_amd64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/universe/f/fluxbox/fluxbox_1.3.5-2.1_amd64.deb",
+    "sha256": "e85dd3da501f2a79cd1b6a715dea0916a47058e5676d8b5d2a100d7439d149c4",
+    "kind": "deb",
+    "mirrors": [
+      "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/pool/universe/f/fluxbox/fluxbox_1.3.5-2.1_amd64.deb"
+    ]
+  },
+  {
+    "file": "libimlib2_1.7.4-1build1_amd64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/universe/i/imlib2/libimlib2_1.7.4-1build1_amd64.deb",
+    "sha256": "258a02ff38ebb54f6242a0271f7f3c9b941f03b6fa5c1230bf5397742ffd7232",
+    "kind": "deb",
+    "mirrors": [
+      "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/pool/universe/i/imlib2/libimlib2_1.7.4-1build1_amd64.deb"
+    ]
+  },
+  {
+    "file": "mesa-utils-bin_8.4.0-1ubuntu1_amd64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/universe/m/mesa-demos/mesa-utils-bin_8.4.0-1ubuntu1_amd64.deb",
+    "sha256": "21cf6e357c073f2bb9b5f0f86b34a3dd8e240225276c2fd6a8e3c5a63466fc6c",
+    "kind": "deb",
+    "mirrors": [
+      "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/pool/universe/m/mesa-demos/mesa-utils-bin_8.4.0-1ubuntu1_amd64.deb"
+    ]
+  },
+  {
+    "file": "python3-websockify_0.10.0+dfsg1-2build1_amd64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/w/websockify/python3-websockify_0.10.0+dfsg1-2build1_amd64.deb",
+    "sha256": "255d99daa24b468016da52853e556fa958ec8af99f2f8f2c3ff7128805b8684e",
+    "kind": "deb",
+    "mirrors": [
+      "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/pool/main/w/websockify/python3-websockify_0.10.0+dfsg1-2build1_amd64.deb"
+    ]
+  },
+  {
+    "file": "python3-jwcrypto_1.0.0-2_all.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/universe/p/python-jwcrypto/python3-jwcrypto_1.0.0-2_all.deb",
+    "sha256": "a0681996a1649002e6080ab1a40bf518e5ee2ebc1a6c3f4cbff75102c3932c26",
+    "kind": "deb",
+    "mirrors": [
+      "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/pool/universe/p/python-jwcrypto/python3-jwcrypto_1.0.0-2_all.deb"
+    ]
+  }
+]
